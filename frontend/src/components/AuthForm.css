@@ -1,0 +1,131 @@
+.auth-card {
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(860px, calc(100vw - 32px));
+  min-height: 520px;
+  margin: 24px 0;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.form-box {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+  padding: 0 40px;
+  transition:
+    transform 0.6s ease,
+    opacity 0.6s ease;
+}
+.form-box.login {
+  z-index: 2;
+}
+.form-box.register {
+  opacity: 0;
+  z-index: 1;
+}
+.show-register .form-box.login {
+  transform: translateX(100%);
+  opacity: 0;
+  pointer-events: none;
+}
+.show-register .form-box.register {
+  transform: translateX(100%);
+  opacity: 1;
+  z-index: 5;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 50%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 10;
+  transition: transform 0.6s ease;
+}
+.show-register .overlay {
+  transform: translateX(-100%);
+}
+.overlay-inner {
+  position: relative;
+  left: -100%;
+  width: 200%;
+  height: 100%;
+  display: flex;
+  color: #fff;
+  background: #0e6b6b;
+  transition: transform 0.6s ease;
+}
+.show-register .overlay-inner {
+  transform: translateX(50%);
+}
+.panel-side {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 12px;
+  padding: 0 36px;
+}
+.panel-side h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+.panel-side p {
+  margin: 0 0 8px;
+}
+.btn.ghost-light {
+  background: transparent;
+  border-color: #fff;
+  color: #fff;
+}
+.btn.ghost-light:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+.mobile-switch {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .auth-card {
+    min-height: 0;
+    padding: 24px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .overlay {
+    display: none;
+  }
+  .form-box {
+    position: static;
+    width: 100%;
+    height: auto;
+    padding: 0 20px;
+    display: none;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+  .auth-card:not(.show-register) .form-box.login,
+  .show-register .form-box.register {
+    display: flex;
+  }
+  .mobile-switch {
+    display: block;
+    margin: 0;
+    padding: 0 20px;
+    color: var(--muted);
+  }
+}
