@@ -9,8 +9,8 @@ A full-stack task manager where users register, log in, and manage **their own p
 
 | Part | URL |
 | --- | --- |
-| Frontend (Vercel) | TODO: add after deployment |
-| Backend API (Render) | TODO: add after deployment |
+| Frontend (Vercel) | [https://aurex-task-manager-roha.vercel.app](https://aurex-task-manager-roha.vercel.app) |
+| Backend API (Vercel serverless) | [https://aurex-fullstack-project-roha.vercel.app](https://aurex-fullstack-project-roha.vercel.app) |
 
 ## Tech stack
 
@@ -20,7 +20,7 @@ A full-stack task manager where users register, log in, and manage **their own p
 | Backend | Node.js, Express |
 | Database | MongoDB Atlas, Mongoose |
 | Authentication | JWT, bcrypt |
-| Deployment | Vercel (frontend), Render (backend) |
+| Deployment | Vercel (frontend and serverless backend) |
 
 ## Features
 
@@ -80,14 +80,22 @@ Real `.env` files are never committed; use the `.env.example` files as templates
 
 ## Deployment
 
-| Part | Platform | Settings |
+| Part | Platform | URL / settings |
 | --- | --- | --- |
-| Database | MongoDB Atlas | Network access allows the hosting provider; connection string stored as `MONGODB_URI` |
-| Backend | Render (Web Service) | Root directory `backend`, build `npm install`, start `npm start`; set the 5 backend variables |
-| Frontend | Vercel | Root directory `frontend`, framework Vite; set `VITE_API_URL` to the Render URL |
+| Database | MongoDB Atlas | Network access allows connections from anywhere (`0.0.0.0/0`); the connection string is stored as `MONGODB_URI` |
+| Backend | Vercel (serverless function) | https://aurex-fullstack-project-roha.vercel.app - project root `backend`, framework preset "Other"; `api/index.js` runs the Express app and `vercel.json` routes every URL to it |
+| Frontend | Vercel | https://aurex-task-manager-roha.vercel.app - project root `frontend`, framework preset Vite |
 
-`CLIENT_URL` on Render must equal the Vercel URL so CORS allows the frontend.
+Both Vercel projects are deployed from this same GitHub repository and redeploy automatically on every push to `main`.
 
+**Environment variables**
+
+| Project | Variables |
+| --- | --- |
+| Backend | `MONGODB_URI`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `CLIENT_URL` (set to the frontend URL so CORS allows it) |
+| Frontend | `VITE_API_URL` (set to the backend URL, no trailing slash) |
+
+**Why the backend is on Vercel:** the roadmap allows "Render/Railway or another suitable hosting platform". Render asked for a credit card to verify the account even for its free plan, so I deployed the Express API on Vercel as a serverless function instead. The Express code is the same as in local development; only the entry point differs (`src/server.js` locally, `api/index.js` on Vercel).
 ## Documentation
 
 - API endpoints, database schema and authentication explanation: [`backend/README.md`](backend/README.md)
@@ -105,6 +113,14 @@ Real `.env` files are never committed; use the `.env.example` files as templates
 | **Edit a task** ![](docs/screenshots/23-ui-edit-task.png) | **Login error** ![](docs/screenshots/24-ui-login-error.png) |
 | **Protected route redirect** ![](docs/screenshots/25-ui-protected-redirect.png) | **Data isolation between users** ![](docs/screenshots/26-ui-data-isolation.png) |
 | **Mobile view** ![](docs/screenshots/27-ui-mobile.png) | |
+
+### Live deployment
+
+| | |
+| --- | --- |
+| **Atlas network access** ![](docs/screenshots/28-atlas-network-access.png) | **Live backend root** ![](docs/screenshots/29-live-backend-root.png) |
+| **Backend deployment (Vercel)** ![](docs/screenshots/30-vercel-backend-ready.png) | **Login against the live API** ![](docs/screenshots/31-live-postman-login-200.png) |
+| **Frontend deployment (Vercel)** ![](docs/screenshots/32-vercel-frontend-ready.png) | **Live app dashboard** ![](docs/screenshots/33-live-app-dashboard.png) |
 
 ### API testing (Postman)
 
@@ -157,6 +173,8 @@ Tested with Postman and in the browser: successful and duplicate registration, c
 - **Overlapping forms on the sliding login page.** After the panel slid, the old Log in form stayed visible under the Register form. The fix was to fade the inactive form out and disable pointer events on it.
 - **Secrets and the JWT secret.** I generated `JWT_SECRET` with a one-line Node command (it failed when split over two lines), kept it in `.env`, and checked with `git status` that `.env` was never committed.
 - **`npm audit` warnings.** The 3 high-severity warnings came only from `nodemon`, a development tool that is not deployed. `npm audit --omit=dev` reports 0 vulnerabilities, so I did not run `npm audit fix --force`, which would have downgraded it.
+- **Deploying without a credit card.** Render asked for card verification, which I could not provide. The roadmap allows another suitable platform, so I split the Express app into `app.js` plus a Vercel entry point (`api/index.js`), made the database connection reusable between requests, and deployed the API as a Vercel serverless function.
+- **Connecting the live frontend and backend.** The live site only worked after `VITE_API_URL` (frontend) and `CLIENT_URL` (backend, for CORS) pointed at each other's exact addresses and both projects were redeployed.
 
 ## Known limitations
 
@@ -166,7 +184,7 @@ Tested with Postman and in the browser: successful and duplicate registration, c
 - No rate limiting on login attempts
 - No pagination for very long task lists
 - Tested manually (Postman and browser); no automated test suite
-- Free-tier hosting: the backend may take ~30-60 seconds to wake up after being idle
+- Serverless hosting: the first request after a quiet period can take a few seconds while the function starts
 
 ## What I learned
 
@@ -174,3 +192,4 @@ Tested with Postman and in the browser: successful and duplicate registration, c
 - I learned that security belongs in the database queries, not just the screens: filtering every task query by the logged-in user's id is what makes data isolation work, and testing it with two accounts proved it.
 - On the frontend I learned how React context, route guards and one shared `api.js` file keep login state in one place, and how to handle loading, error and empty states so the app never just breaks silently.
 - I also learned why secrets live in `.env` files and environment variables instead of source code, and how to test an API with Postman using saved tokens and status-code checks.
+- I learned how deployment works: environment variables are set in the hosting dashboard (never in code), the frontend is built with its API address baked in, CORS must allow the frontend's exact origin, and an Express app can run as a serverless function.

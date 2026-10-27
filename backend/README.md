@@ -36,7 +36,10 @@ backend/
 │   │   ├── authMiddleware.js         JWT verification (protect)
 │   │   └── errorHandler.js           404 + central error handling
 │   ├── routes/                       URL -> controller mapping
-│   └── server.js                     App entry point
+│   ├── app.js                        Express app (middleware + routes)
+│   └── server.js                     Local development starter
+├── api/index.js                      Vercel serverless entry point
+├── vercel.json                       Routes every URL to that function
 ├── .env.example
 └── package.json
 ```
@@ -129,6 +132,17 @@ Errors always look like `{ "message": "..." }`.
 - CORS restricted to the configured frontend origin(s)
 - Input validation in controllers and Mongoose schemas
 - Central error handler; no stack traces sent to clients
+
+## Deployment (Vercel serverless)
+
+Live API: https://aurex-fullstack-project-roha.vercel.app
+
+- `api/index.js` connects to MongoDB (reusing the connection between requests) and passes each request to the Express app from `src/app.js`.
+- `vercel.json` sends every URL to that function, so routes like `/api/auth/login` work unchanged.
+- Project settings on Vercel: root directory `backend`, framework preset "Other".
+- Environment variables are set in the Vercel dashboard: `MONGODB_URI`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `CLIENT_URL` (the frontend URL). `PORT` is not needed.
+- MongoDB Atlas network access allows `0.0.0.0/0`, because serverless functions have no fixed IP address.
+- Locally, `npm run dev` still starts the same app through `src/server.js`.
 
 ## Testing
 
